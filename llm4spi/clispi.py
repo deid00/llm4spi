@@ -9,12 +9,14 @@ from llm4spi import MyGPT4ALL_Client
 from groq4spi import MyGroqClient
 from openai import OpenAI
 from gpt4all import GPT4All
+import google.generativeai as Gemini
+from gemini4spi import MyGeminiResponder
 
 DEBUG = True
 
 
 # available command-line options:
-providers = ["openAI", "gpt4all", "groq"]
+providers = ["openAI", "gpt4all", "groq","gemini"]
 options = [
    ("provider",  "The name of the LLM provider, e.g. openAI. Mandatory."),
    ("model",     "The name of the LLM to use, e.g. gpt3.5. Mandatory."),
@@ -90,6 +92,11 @@ def main(argv):
           openAIclient = OpenAI(base_url="https://api.groq.com/openai/v1",
                                 api_key=groq_api_key)    
           myAIclient = MyGroqClient(openAIclient,model_)
+      case "gemini" :
+          gemini_api_key = os.environ.get('GEMINI_API_KEY')
+          geminiClient = Gemini.GenerativeModel(model_)
+          myAIclient = MyGeminiResponder(geminiClient)
+
 
    myAIclient.DEBUG = DEBUG 
 
