@@ -28,7 +28,10 @@ options = [
    ("enableEvaluation", "If present will enable or disable evaluation. If not present, evaluation is enabled."),
    ("allowMultipleAnswers", "If present specifies how many answers per problem are requested. If not present it is 1."),
    ("gpt4all_localModelPath", "If a local GPT4ALL model is used, this point to the folder where GPT4AALL models are placed. Default is ../../models"),
-   ("gpt4all_device", "If a local GPT4ALL model is used, this specifies to use cpu or gpu-id for running the model. if not specified, cpu is used.")
+   ("gpt4all_device", "If a local GPT4ALL model is used, this specifies to use cpu or gpu-id for running the model. if not specified, cpu is used."),
+   ("gemini_rpm", "Request per minute for Google Gemini models."),
+   ("gemini_tpm", "Tokens per minute for Google Gemini models."),
+   ("gemini_rpd", "Request per day for Google Gemini models."),
 ]
 
 helptxt = "python clispi.py [--option=arg]*\n"
@@ -49,6 +52,9 @@ def main(argv):
    allowMultipleAnswers_ = 1
    gpt4all_localModelPath_ = os.path.join(ROOT, "..", "..", "models") 
    gpt4all_device_ = "cpu"
+   gemini_rpm_ = 15
+   gemini_tpm_ = 1000000
+   gemini_rpd_ = 1500
    try:
       opts, args = getopt.getopt(argv,"h", [ o[0] + "=" for o in options])
    except getopt.GetoptError:
@@ -77,6 +83,9 @@ def main(argv):
          case "--allowMultipleAnswers" : allowMultipleAnswers_ = int(arg)
          case "--experimentName" : experimentName_ = arg
 
+         case "--gemini_rpm" : gemini_rpm_ = int(arg)
+         case "--gemini_tpm": gemini_tpm_ = int(arg)
+         case "--gemini_rpd" : gemini_rpd_ = int(arg)
 
    # create the client:
    match provider_ :
@@ -95,7 +104,7 @@ def main(argv):
       case "gemini" :
           gemini_api_key = os.environ.get('GEMINI_API_KEY')
           geminiClient = Gemini.GenerativeModel(model_)
-          myAIclient = MyGeminiResponder(geminiClient)
+          myAIclient = MyGeminiResponder(geminiClient, gemini_rpm_, gemini_tpm_, gemini_rpd_)
 
 
    myAIclient.DEBUG = DEBUG 
