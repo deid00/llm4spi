@@ -12,11 +12,14 @@ from gpt4all import GPT4All
 import google.generativeai as Gemini
 from gemini4spi import MyGeminiResponder
 
+from llama_cpp import Llama
+from llama4spi import  MyLLAMAcppClient
+
 DEBUG = True
 
 
 # available command-line options:
-providers = ["openAI", "gpt4all", "groq","gemini"]
+providers = ["openAI", "gpt4all", "groq","gemini", "llamacpp"]
 options = [
    ("provider",  "The name of the LLM provider, e.g. openAI. Mandatory."),
    ("model",     "The name of the LLM to use, e.g. gpt3.5. Mandatory."),
@@ -32,6 +35,7 @@ options = [
    ("gemini_rpm", "Request per minute for Google Gemini models."),
    ("gemini_tpm", "Tokens per minute for Google Gemini models."),
    ("gemini_rpd", "Request per day for Google Gemini models."),
+   ("llamacpp_localModelPath", "Request per day for Google Gemini models."),
 ]
 
 helptxt = "python clispi.py [--option=arg]*\n"
@@ -55,6 +59,7 @@ def main(argv):
    gemini_rpm_ = 15
    gemini_tpm_ = 1000000
    gemini_rpd_ = 1500
+   llamacpp_localModelPath_ = os.path.join( "/","models")
    try:
       opts, args = getopt.getopt(argv,"h", [ o[0] + "=" for o in options])
    except getopt.GetoptError:
@@ -87,6 +92,8 @@ def main(argv):
          case "--gemini_tpm": gemini_tpm_ = int(arg)
          case "--gemini_rpd" : gemini_rpd_ = int(arg)
 
+         case "--llamacpp_localModelPath": llamacpp_localModelPath_ = arg
+
    # create the client:
    match provider_ :
       case "openAI" : 
@@ -105,6 +112,9 @@ def main(argv):
           gemini_api_key = os.environ.get('GEMINI_API_KEY')
           geminiClient = Gemini.GenerativeModel(model_)
           myAIclient = MyGeminiResponder(geminiClient, gemini_rpm_, gemini_tpm_, gemini_rpd_)
+      case "llamacpp" :
+          llamacppClient =  Llama(model_path=os.path.join(llamacpp_localModelPath_,model_) , n_gpu_layers=-1)
+          myAIclient = MyLLAMAcppClient(llamacppClient)
 
 
    myAIclient.DEBUG = DEBUG 
